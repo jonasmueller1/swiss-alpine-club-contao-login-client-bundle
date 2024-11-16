@@ -5,7 +5,7 @@ declare(strict_types=1);
 /*
  * This file is part of Swiss Alpine Club Contao Login Client Bundle.
  *
- * (c) Marko Cupic 2024 <m.cupic@gmx.ch>
+ * (c) Marko Cupic <m.cupic@gmx.ch>
  * @license MIT
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code.
@@ -32,7 +32,7 @@ use Markocupic\SwissAlpineClubContaoLoginClientBundle\ErrorMessage\ErrorMessage;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\ErrorMessage\ErrorMessageManager;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\OAuth2\Client\OAuth2Client;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\OAuth2\Client\OAuth2ClientFactory;
-use Markocupic\SwissAlpineClubContaoLoginClientBundle\OAuth2\Client\Provider\SwissAlpineClub;
+use Markocupic\SwissAlpineClubContaoLoginClientBundle\OAuth2\Client\Provider\Hitobito;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\Authenticator\Exception\ContaoBackendUserNotFoundAuthenticationException;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\Authenticator\Exception\ContaoFrontendUserLoginNotEnabledAuthenticationException;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\Authenticator\Exception\ContaoFrontendUserNotFoundAuthenticationException;
@@ -41,10 +41,11 @@ use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\Authenticator\Exc
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\Authenticator\Exception\MissingSacMembershipAuthenticationException;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\Authenticator\Exception\NotMemberOfAllowedSectionAuthenticationException;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\Authenticator\Exception\ResourceOwnerHasInvalidEmailAuthenticationException;
-use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\Authenticator\Exception\ResourceOwnerHasInvalidUuidAuthenticationException;
+use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\Authenticator\Exception\ResourceOwnerHasInvalidSacMemberIdException;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\Authenticator\Exception\UnexpectedAuthenticationException;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\OAuth\OAuthUser;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\OAuth\OAuthUserChecker;
+use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\User\ContaoUser;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\User\ContaoUserFactory;
 use Psr\Log\LoggerInterface;
 use Scheb\TwoFactorBundle\Security\Http\Authenticator\TwoFactorAuthenticator;
@@ -66,7 +67,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 class Authenticator extends AbstractAuthenticator
 {
-    public const NAME = 'SAC_OAUTH2_AUTHENTICATOR';
+    public const string NAME = 'SAC_OAUTH2_AUTHENTICATOR';
 
     public function __construct(
         #[Autowire('@contao.security.authentication_success_handler')]
@@ -171,6 +172,7 @@ class Authenticator extends AbstractAuthenticator
             ]);
 
             // Get the resource owner object.
+            /** @var OAuthUser $resourceOwner */
             $resourceOwner = $oAuth2Client->fetchUserFromToken($accessToken);
 
             // Create the resource owner wrapper,
@@ -194,12 +196,12 @@ class Authenticator extends AbstractAuthenticator
                 );
             }
 
-            // Check if we can find a UUID in resource owner claims.
-            if (!$this->oAuthUserChecker->checkHasUuid($oAuthUser)) {
+            // Check if we can find a sac member id in resource owner claims.
+            if (!$this->oAuthUserChecker->checkHasSacMemberId($oAuthUser)) {
                 $this->throwWithMessage(
                     $request,
                     ErrorMessage::LEVEL_WARNING,
-                    ResourceOwnerHasInvalidUuidAuthenticationException::class,
+                    ResourceOwnerHasInvalidSacMemberIdException::class,
                     $resourceOwner,
                 );
             }
@@ -293,8 +295,8 @@ class Authenticator extends AbstractAuthenticator
                 }
             }
 
-            // if contao scope is 'backend': Check if tl_user.disable === false or tl_user.start and tl_user.stop are not in an allowed time range
-            // if contao scope is 'frontend': Check if tl_member.disable === false or tl_member.start and tl_member.stop are not in an allowed time range
+            // If Contao scope is 'backend': Check if tl_user.disable === false or tl_user.start and tl_user.stop are not in an allowed time range
+            // If Contao scope is 'frontend': Check if tl_member.disable === false or tl_member.start and tl_member.stop are not in an allowed time range
             if (!$contaoUser->checkAccountIsNotDisabled() && !$blnAllowContaoLoginIfAccountIsDisabled) {
                 $this->throwWithMessage(
                     $request,
@@ -308,6 +310,9 @@ class Authenticator extends AbstractAuthenticator
             // Update tl_member and tl_user.
             $contaoUser->updateFrontendUser();
             $contaoUser->updateBackendUser();
+
+            // Save the refresh token to the user entity
+            $this->saveRefreshToken($accessToken->getRefreshToken(), $contaoUser, $contaoScope);
 
             return new SelfValidatingPassport(new UserBadge($contaoUser->getIdentifier()));
         } catch (IdentityProviderException|AuthenticationException $e) {
@@ -447,7 +452,7 @@ class Authenticator extends AbstractAuthenticator
         );
 
         if (null !== $this->contaoAccessLogger && null !== $resourceOwner) {
-            $oAuthUser = new OAuthUser($resourceOwner->toArray(), SwissAlpineClub::RESOURCE_OWNER_IDENTIFIER);
+            $oAuthUser = new OAuthUser($resourceOwner->toArray(), Hitobito::ACCESS_TOKEN_RESOURCE_OWNER_ID);
 
             // Log user claims, if login fails.
             $logText = sprintf(
@@ -473,5 +478,18 @@ class Authenticator extends AbstractAuthenticator
         }
 
         throw new $exceptionClass($exceptionClass::MESSAGE);
+    }
+
+    private function saveRefreshToken(string $refreshToken, ContaoUser $contaoUser, string $contaoScope): void
+    {
+        if (ContaoCoreBundle::SCOPE_BACKEND === $contaoScope) {
+            $model = $contaoUser->getModel('tl_user');
+            $model->refreshToken = $refreshToken;
+        } else {
+            $model = $contaoUser->getModel('tl_member');
+            $model->refreshToken = $refreshToken;
+        }
+
+        $model->save();
     }
 }

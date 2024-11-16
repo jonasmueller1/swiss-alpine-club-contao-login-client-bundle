@@ -5,7 +5,7 @@ declare(strict_types=1);
 /*
  * This file is part of Swiss Alpine Club Contao Login Client Bundle.
  *
- * (c) Marko Cupic 2024 <m.cupic@gmx.ch>
+ * (c) Marko Cupic <m.cupic@gmx.ch>
  * @license MIT
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code.
@@ -22,12 +22,13 @@ use League\OAuth2\Client\Tool\BearerAuthorizationTrait;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\OAuth\OAuthUser;
 use Psr\Http\Message\ResponseInterface;
 
-class SwissAlpineClub extends AbstractProvider
+class Hitobito extends AbstractProvider
 {
     use BearerAuthorizationTrait;
 
-    public const RESOURCE_OWNER_IDENTIFIER = 'sub';
+    public const string ACCESS_TOKEN_RESOURCE_OWNER_ID = 'sub';
 
+    protected string $scopeSeparator = ' ';
     protected string $urlAuthorize;
     protected string $urlAccessToken;
     protected string $urlResourceOwnerDetails;
@@ -41,6 +42,11 @@ class SwissAlpineClub extends AbstractProvider
         }
 
         parent::__construct($providerConfiguration, $collaborators);
+    }
+
+    public function getScopeSeparator(): string
+    {
+        return $this->scopeSeparator;
     }
 
     public function getBaseAuthorizationUrl(): string
@@ -70,7 +76,7 @@ class SwissAlpineClub extends AbstractProvider
 
     protected function createResourceOwner(array $response, AccessToken $token): ResourceOwnerInterface
     {
-        return new OAuthUser($response, self::RESOURCE_OWNER_IDENTIFIER);
+        return new OAuthUser($response, self::ACCESS_TOKEN_RESOURCE_OWNER_ID);
     }
 
     protected function getDefaultScopes(): array
@@ -86,6 +92,7 @@ class SwissAlpineClub extends AbstractProvider
             if (!\is_string($error)) {
                 $error = var_export($error, true);
             }
+
             $code = isset($this->responseCode) && !empty($data[$this->responseCode]) ? $data[$this->responseCode] : 0;
 
             if (!\is_int($code)) {

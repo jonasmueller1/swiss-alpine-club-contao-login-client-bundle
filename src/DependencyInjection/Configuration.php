@@ -5,7 +5,7 @@ declare(strict_types=1);
 /*
  * This file is part of Swiss Alpine Club Contao Login Client Bundle.
  *
- * (c) Marko Cupic 2024 <m.cupic@gmx.ch>
+ * (c) Marko Cupic <m.cupic@gmx.ch>
  * @license MIT
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code.
@@ -19,7 +19,7 @@ use Symfony\Component\Config\Definition\ConfigurationInterface;
 
 class Configuration implements ConfigurationInterface
 {
-    public const ROOT_KEY = 'sac_oauth2_client';
+    public const string ROOT_KEY = 'sac_oauth2_client';
 
     public function getConfigTreeBuilder(): TreeBuilder
     {
@@ -44,15 +44,28 @@ class Configuration implements ConfigurationInterface
                         ->end()
                         ->scalarNode('auth_provider_endpoint_authorize')
                             ->cannotBeEmpty()
-                            ->defaultValue('https://ids01.sac-cas.ch:443/oauth2/authorize')
+                            ->defaultValue('https://sac-cas.puzzle.ch/oauth/authorize')
                         ->end()
                         ->scalarNode('auth_provider_endpoint_token')
                             ->cannotBeEmpty()
-                            ->defaultValue('https://ids01.sac-cas.ch:443/oauth2/token')
+                            ->defaultValue('https://sac-cas.puzzle.ch/oauth/token')
                         ->end()
                         ->scalarNode('auth_provider_endpoint_userinfo')
                             ->cannotBeEmpty()
-                            ->defaultValue('https://ids01.sac-cas.ch:443/oauth2/userinfo')
+                            ->defaultValue('https://sac-cas.puzzle.ch/de/oauth/profile')
+                        ->end()
+                        ->scalarNode('auth_provider_endpoint_discovery')
+                            ->cannotBeEmpty()
+                            ->defaultValue('https://sac-cas.puzzle.ch/.well-known/openid-configuration')
+                        ->end()
+                        ->arrayNode('oauth_scopes')
+                            ->scalarPrototype()->end()
+                            ->info('Array of allowed scopes: ["email", "name", "with_roles", "openid", "api", "events", "groups", "people", "invoices", "mailing_lists", "user_groups"].')
+                            ->defaultValue(['openid', 'with_roles', 'user_group'])
+                        ->end()
+                        ->scalarNode('section_id_mapper')
+                            ->cannotBeEmpty()
+                            ->defaultValue('{"1415":4250,"1420":4251,"1425":4252,"1430":4253,"1435":4254}')
                         ->end()
                         ->scalarNode('client_auth_endpoint_frontend_route')
                             ->cannotBeEmpty()

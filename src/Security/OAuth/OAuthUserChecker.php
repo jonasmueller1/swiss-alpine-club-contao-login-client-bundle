@@ -5,7 +5,7 @@ declare(strict_types=1);
 /*
  * This file is part of Swiss Alpine Club Contao Login Client Bundle.
  *
- * (c) Marko Cupic 2024 <m.cupic@gmx.ch>
+ * (c) Marko Cupic <m.cupic@gmx.ch>
  * @license MIT
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code.
@@ -19,44 +19,28 @@ use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\System;
 use Contao\Validator;
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
-use Markocupic\SwissAlpineClubContaoLoginClientBundle\ErrorMessage\ErrorMessage;
-use Markocupic\SwissAlpineClubContaoLoginClientBundle\ErrorMessage\ErrorMessageManager;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Symfony\Contracts\Translation\TranslatorInterface;
 
-class OAuthUserChecker
+readonly class OAuthUserChecker
 {
-    /**
-     * NAVISION section id regex.
-     */
-    public const NAV_SECTION_ID_REGEX = '/NAV_MITGLIED_S(\d+)/';
-
     public function __construct(
-        private readonly ContaoFramework $framework,
-        private readonly ErrorMessageManager $errorMessageManager,
-        private readonly TranslatorInterface $translator,
+        private ContaoFramework $framework,
         #[Autowire('%sac_oauth2_client.oidc.allowed_frontend_sac_section_ids%')]
-        private readonly array $allowedFrontendSacSectionIds,
+        private array $allowedFrontendSacSectionIds,
         #[Autowire('%sac_oauth2_client.oidc.allowed_backend_sac_section_ids%')]
-        private readonly array $allowedBackendSacSectionIds,
+        private array $allowedBackendSacSectionIds,
     ) {
     }
 
     /**
      * Check if OAuth user has a valid uuid/sub.
+     *
+     * @param OAuthUser $oAuthUser
      */
-    public function checkHasUuid(ResourceOwnerInterface $oAuthUser): bool
+    public function checkHasSacMemberId(ResourceOwnerInterface $oAuthUser): bool
     {
         /** @var System $systemAdapter */
         if (empty($oAuthUser->getId())) {
-            $this->errorMessageManager->add2Flash(
-                new ErrorMessage(
-                    ErrorMessage::LEVEL_WARNING,
-                    $this->translator->trans('ERR.sacOidcLoginError_resourceOwnerHasInvalidUuid_matter', [], 'contao_default'),
-                    $this->translator->trans('ERR.sacOidcLoginError_resourceOwnerHasInvalidUuid_howToFix', [], 'contao_default'),
-                )
-            );
-
             return false;
         }
 
@@ -65,18 +49,12 @@ class OAuthUserChecker
 
     /**
      * Check if OAuth user is a SAC member.
+     *
+     * @param OAuthUser $oAuthUser
      */
     public function checkIsSacMember(ResourceOwnerInterface $oAuthUser): bool
     {
         if (!$this->isSacMember($oAuthUser)) {
-            $this->errorMessageManager->add2Flash(
-                new ErrorMessage(
-                    ErrorMessage::LEVEL_WARNING,
-                    $this->translator->trans('ERR.sacOidcLoginError_missingSacMembership_matter', [$oAuthUser->getFirstName()], 'contao_default'),
-                    $this->translator->trans('ERR.sacOidcLoginError_missingSacMembership_howToFix', [], 'contao_default'),
-                )
-            );
-
             return false;
         }
 
@@ -85,6 +63,8 @@ class OAuthUserChecker
 
     /**
      * Check for allowed SAC section membership.
+     *
+     * @param OAuthUser $oAuthUser
      */
     public function checkIsMemberOfAllowedSection(ResourceOwnerInterface $oAuthUser, string $contaoScope): bool
     {
@@ -94,19 +74,13 @@ class OAuthUserChecker
             return true;
         }
 
-        $this->errorMessageManager->add2Flash(
-            new ErrorMessage(
-                ErrorMessage::LEVEL_WARNING,
-                $this->translator->trans('ERR.sacOidcLoginError_notMemberOfAllowedSection_matter', [$oAuthUser->getFirstName()], 'contao_default'),
-                $this->translator->trans('ERR.sacOidcLoginError_notMemberOfAllowedSection_howToFix', [], 'contao_default'),
-            )
-        );
-
         return false;
     }
 
     /**
      * Check if OAuth user has a valid email address.
+     *
+     * @param OAuthUser $oAuthUser
      */
     public function checkHasValidEmailAddress(ResourceOwnerInterface $oAuthUser): bool
     {
@@ -114,15 +88,6 @@ class OAuthUserChecker
         $validatorAdapter = $this->framework->getAdapter(Validator::class);
 
         if (empty($oAuthUser->getEmail()) || !$validatorAdapter->isEmail($oAuthUser->getEmail())) {
-            $this->errorMessageManager->add2Flash(
-                new ErrorMessage(
-                    ErrorMessage::LEVEL_WARNING,
-                    $this->translator->trans('ERR.sacOidcLoginError_resourceOwnerHasInvalidEmail_matter', [$oAuthUser->getFirstName()], 'contao_default'),
-                    $this->translator->trans('ERR.sacOidcLoginError_resourceOwnerHasInvalidEmail_howToFix', [], 'contao_default'),
-                    $this->translator->trans('ERR.sacOidcLoginError_resourceOwnerHasInvalidEmail_explain', [], 'contao_default'),
-                )
-            );
-
             return false;
         }
 
@@ -131,12 +96,15 @@ class OAuthUserChecker
 
     /**
      * Return all allowed SAC section ids a OAuth user belongs to.
+     *
+     * @param OAuthUser $oAuthUser
      */
     public function getAllowedSacSectionIds(ResourceOwnerInterface $oAuthUser, string $contaoScope): array
     {
         $arrAllowedGroups = match ($contaoScope) {
             ContaoCoreBundle::SCOPE_FRONTEND => $this->allowedFrontendSacSectionIds,
-            default => $this->allowedBackendSacSectionIds,
+            ContaoCoreBundle::SCOPE_BACKEND => $this->allowedBackendSacSectionIds,
+            default => [],
         };
 
         $arrGroupMembership = $this->getSacSectionIds($oAuthUser);
@@ -146,31 +114,21 @@ class OAuthUserChecker
 
     /**
      * Check if OAuth user is member of a SAC section.
+     *
+     * @param OAuthUser $oAuthUser
      */
     public function isSacMember(ResourceOwnerInterface $oAuthUser): bool
     {
-        $strRoles = $oAuthUser->getRolesAsString();
-
-        // Search for NAV_MITGLIED_S00004250 or NAV_MITGLIED_S00004251, etc.
-        $pattern = static::NAV_SECTION_ID_REGEX;
-
-        return preg_match($pattern, $strRoles) && !empty($oAuthUser->getId()) && !empty($oAuthUser->getSacMemberId());
+        return !empty($oAuthUser->getSectionMembershipIDS());
     }
 
     /**
      * Return all SAC section ids a OAuth user belongs to.
+     *
+     * @param OAuthUser $oAuthUser
      */
     private function getSacSectionIds(ResourceOwnerInterface $oAuthUser): array
     {
-        $strRoles = $oAuthUser->getRolesAsString();
-
-        if (empty($strRoles)) {
-            return [];
-        }
-
-        // Search for NAV_MITGLIED_S00004250 or NAV_MITGLIED_S00004251, etc.
-        $pattern = static::NAV_SECTION_ID_REGEX;
-
-        return preg_match_all($pattern, $strRoles, $matches) ? array_unique(array_map('intval', $matches[1])) : [];
+        return $oAuthUser->getSectionMembershipIDS();
     }
 }

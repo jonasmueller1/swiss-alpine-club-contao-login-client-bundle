@@ -5,7 +5,7 @@ declare(strict_types=1);
 /*
  * This file is part of Swiss Alpine Club Contao Login Client Bundle.
  *
- * (c) Marko Cupic 2024 <m.cupic@gmx.ch>
+ * (c) Marko Cupic <m.cupic@gmx.ch>
  * @license MIT
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code.
@@ -24,7 +24,9 @@ use Contao\UserModel;
 use Doctrine\DBAL\Connection;
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 use Markocupic\SacEventToolBundle\DataContainer\Util;
+use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\OAuth\OAuthUser;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\OAuth\OAuthUserChecker;
+use Random\Randomizer;
 use Symfony\Component\PasswordHasher\Hasher\PasswordHasherFactoryInterface;
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 
@@ -43,6 +45,9 @@ readonly class ContaoUser
     ) {
     }
 
+    /**
+     * @return OAuthUser
+     */
     public function getResourceOwner(): ResourceOwnerInterface
     {
         return $this->resourceOwner;
@@ -80,14 +85,14 @@ readonly class ContaoUser
             /** @var MemberModel $memberModelAdapter */
             $memberModelAdapter = $this->framework->getAdapter(MemberModel::class);
 
-            return $memberModelAdapter->findOneByUsername($this->resourceOwner->getSacMemberId());
+            return $memberModelAdapter->findOneByUsername($this->getResourceOwner()->getSacMemberId());
         }
 
         if ('tl_user' === $strTable) {
             /** @var UserModel $userModelAdapter */
             $userModelAdapter = $this->framework->getAdapter(UserModel::class);
 
-            return $userModelAdapter->findOneBySacMemberId($this->resourceOwner->getSacMemberId());
+            return $userModelAdapter->findOneBySacMemberId($this->getResourceOwner()->getSacMemberId());
         }
 
         return null;
@@ -112,7 +117,7 @@ readonly class ContaoUser
      */
     public function checkFrontendUserExists(): bool
     {
-        if (empty($this->resourceOwner->getSacMemberId()) || !$this->userExists()) {
+        if (empty($this->getResourceOwner()->getSacMemberId()) || !$this->userExists()) {
             return false;
         }
 
@@ -124,7 +129,7 @@ readonly class ContaoUser
      */
     public function checkBackendUserExists(): bool
     {
-        if (empty($this->resourceOwner->getSacMemberId()) || !$this->userExists()) {
+        if (empty($this->getResourceOwner()->getSacMemberId()) || !$this->userExists()) {
             return false;
         }
 
@@ -155,7 +160,7 @@ readonly class ContaoUser
         $model = $this->getModel();
 
         if (null === $model) {
-            throw new \RuntimeException('Contao Frontend User Model not found.');
+            throw new \RuntimeException('Contao Frontend User model not found.');
         }
 
         if (!$model->login) {
@@ -173,7 +178,7 @@ readonly class ContaoUser
         $model = $this->getModel();
 
         if (null === $model) {
-            throw new \RuntimeException('Contao User Model not found.');
+            throw new \RuntimeException('Contao User model not found.');
         }
 
         $disabled = $model->disable || ('' !== $model->start && $model->start > time()) || ('' !== $model->stop && $model->stop <= time());
@@ -200,7 +205,7 @@ readonly class ContaoUser
         }
 
         // Correctly format the section ids (the key is important!): e.g. [0 => '4250', 2 => '4252'] -> user is member of two SAC Sektionen/Ortsgruppen
-        $arrSectionIdsUserIsAllowed = array_map('strval', $this->resourceOwnerChecker->getAllowedSacSectionIds($this->resourceOwner, ContaoCoreBundle::SCOPE_FRONTEND));
+        $arrSectionIdsUserIsAllowed = array_map('strval', $this->resourceOwnerChecker->getAllowedSacSectionIds($this->getResourceOwner(), ContaoCoreBundle::SCOPE_FRONTEND));
         $arrSectionIdsAll = array_map('strval', array_keys($this->util->listSacSections()));
         $arrSectionIds = array_filter($arrSectionIdsAll, static fn ($v, $k) => \in_array($v, $arrSectionIdsUserIsAllowed, true), ARRAY_FILTER_USE_BOTH);
 
@@ -209,25 +214,25 @@ readonly class ContaoUser
             // Be sure to set the correct data type!
             // Otherwise, the record will be updated
             // due to wrong type cast only.
-            'mobile' => $this->beautifyPhoneNumber($this->resourceOwner->getPhoneMobile()),
-            'phone' => $this->beautifyPhoneNumber($this->resourceOwner->getPhonePrivate()),
-            'uuid' => $this->resourceOwner->getId(),
-            'lastname' => $this->resourceOwner->getLastName(),
-            'firstname' => $this->resourceOwner->getFirstName(),
-            'street' => $this->resourceOwner->getStreet(),
-            'city' => $this->resourceOwner->getCity(),
-            'postal' => $this->resourceOwner->getPostal(),
-            'dateOfBirth' => false !== strtotime($this->resourceOwner->getDateOfBirth()) ? (string) strtotime($this->resourceOwner->getDateOfBirth()) : 0,
-            'gender' => 'HERR' === $this->resourceOwner->getSalutation() ? 'male' : 'female',
-            'email' => $this->resourceOwner->getEmail(),
+            //'mobile' => $this->beautifyPhoneNumber($this->getResourceOwner()->getPhone()),
+            //'phone' => $this->beautifyPhoneNumber($this->getResourceOwner()->getPhone()),
+            //'uuid' => $this->getResourceOwner()->getId(),
+            'lastname' => $this->getResourceOwner()->getLastName(),
+            'firstname' => $this->getResourceOwner()->getFirstName(),
+            'street' => $this->getResourceOwner()->getStreet(),
+            'city' => $this->getResourceOwner()->getCity(),
+            'postal' => $this->getResourceOwner()->getPostal(),
+            'dateOfBirth' => false !== strtotime($this->getResourceOwner()->getDateOfBirth()) ? (string) strtotime($this->getResourceOwner()->getDateOfBirth()) : 0,
+            'gender' => $this->getResourceOwner()->getGender(),
+            'email' => $this->getResourceOwner()->getEmail(),
             'sectionId' => serialize($arrSectionIds),
         ];
 
         // Member has to be member of a valid SAC section
         if ($this->allowFrontendLoginToPredefinedSectionMembersOnly) {
-            $set['isSacMember'] = !empty($this->resourceOwnerChecker->getAllowedSacSectionIds($this->resourceOwner, ContaoCoreBundle::SCOPE_FRONTEND)) ? 1 : 0;
+            $set['isSacMember'] = !empty($this->resourceOwnerChecker->getAllowedSacSectionIds($this->getResourceOwner(), ContaoCoreBundle::SCOPE_FRONTEND)) ? 1 : 0;
         } else {
-            $set['isSacMember'] = $this->resourceOwnerChecker->isSacMember($this->resourceOwner) ? 1 : 0;
+            $set['isSacMember'] = $this->resourceOwnerChecker->isSacMember($this->getResourceOwner()) ? 1 : 0;
         }
 
         // Add member groups
@@ -247,7 +252,7 @@ readonly class ContaoUser
         // Set random password
         if (empty($objMember->password)) {
             $encoder = $this->hasherFactory->getPasswordHasher(FrontendUser::class);
-            $set['password'] = $encoder->hash(substr(md5((string) random_int(900009, 111111111111)), 0, 8), null);
+            $set['password'] = $encoder->hash($this->generateRandomPassword());
         }
 
         if ($this->connection->update('tl_member', $set, ['id' => $objMember->id])) {
@@ -273,7 +278,7 @@ readonly class ContaoUser
         }
 
         // Correctly format the section ids (the key is important!): e.g. [0 => '4250', 2 => '4252'] -> user is member of two SAC Sektionen/Ortsgruppen
-        $arrSectionIdsUserIsAllowed = array_map('strval', $this->resourceOwnerChecker->getAllowedSacSectionIds($this->resourceOwner, ContaoCoreBundle::SCOPE_BACKEND));
+        $arrSectionIdsUserIsAllowed = array_map('strval', $this->resourceOwnerChecker->getAllowedSacSectionIds($this->getResourceOwner(), ContaoCoreBundle::SCOPE_BACKEND));
         $arrSectionIdsAll = array_map('strval', array_keys($this->util->listSacSections()));
         $arrSectionIds = array_filter($arrSectionIdsAll, static fn ($v, $k) => \in_array($v, $arrSectionIdsUserIsAllowed, true), ARRAY_FILTER_USE_BOTH);
 
@@ -281,25 +286,25 @@ readonly class ContaoUser
             // Be sure to set the correct data type!
             // Otherwise, the record will be updated
             // due to wrong type cast only.
-            'mobile' => $this->beautifyPhoneNumber($this->resourceOwner->getPhoneMobile()),
-            'phone' => $this->beautifyPhoneNumber($this->resourceOwner->getPhonePrivate()),
-            'uuid' => $this->resourceOwner->getId(),
-            'lastname' => $this->resourceOwner->getLastName(),
-            'firstname' => $this->resourceOwner->getFirstName(),
-            'name' => $this->resourceOwner->getFullName(),
-            'street' => $this->resourceOwner->getStreet(),
-            'city' => $this->resourceOwner->getCity(),
-            'postal' => $this->resourceOwner->getPostal(),
-            'dateOfBirth' => false !== strtotime($this->resourceOwner->getDateOfBirth()) ? (string) strtotime($this->resourceOwner->getDateOfBirth()) : '0',
-            'gender' => 'HERR' === $this->resourceOwner->getSalutation() ? 'male' : 'female',
-            'email' => $this->resourceOwner->getEmail(),
+            //'mobile' => $this->beautifyPhoneNumber($this->getResourceOwner()->getPhoneMobile()),
+            //'phone' => $this->beautifyPhoneNumber($this->getResourceOwner()->getPhonePrivate()),
+            //'uuid' => $this->getResourceOwner()->getId(),
+            'lastname' => $this->getResourceOwner()->getLastName(),
+            'firstname' => $this->getResourceOwner()->getFirstName(),
+            'name' => $this->getResourceOwner()->getFullName(),
+            'street' => $this->getResourceOwner()->getStreet(),
+            'city' => $this->getResourceOwner()->getCity(),
+            'postal' => $this->getResourceOwner()->getPostal(),
+            'dateOfBirth' => false !== strtotime($this->getResourceOwner()->getDateOfBirth()) ? (string) strtotime($this->getResourceOwner()->getDateOfBirth()) : '0',
+            'gender' => $this->getResourceOwner()->getGender(),
+            'email' => $this->getResourceOwner()->getEmail(),
             'sectionId' => serialize($arrSectionIds),
         ];
 
         // Set random password
         if (empty($objUser->password)) {
             $encoder = $this->hasherFactory->getPasswordHasher(BackendUser::class);
-            $set['password'] = $encoder->hash(substr(md5((string) random_int(900009, 111111111111)), 0, 8), null);
+            $set['password'] = $encoder->hash($this->generateRandomPassword());
         }
 
         if ($this->connection->update('tl_user', $set, ['id' => $objUser->id])) {
@@ -349,8 +354,7 @@ readonly class ContaoUser
             $strNumber = preg_replace('/\s+/', '', $strNumber);
 
             // Remove country code
-            $strNumber = str_replace('+41', '', $strNumber);
-            $strNumber = str_replace('0041', '', $strNumber);
+            $strNumber = str_replace(['+41', '0041'], ['', ''], $strNumber);
 
             // Add a leading zero, if there is no f.ex 41
             if (!str_starts_with($strNumber, '0') && 9 === \strlen($strNumber)) {
@@ -374,19 +378,19 @@ readonly class ContaoUser
      */
     private function createFrontendUserIfNotExists(): void
     {
-        $sacMemberId = $this->resourceOwner->getSacMemberId();
+        $sacMemberId = $this->getResourceOwner()->getSacMemberId();
 
         if (!$this->isValidUsername($sacMemberId)) {
-            throw new \RuntimeException(sprintf('Could not create a new Contao Frontend User fue to a invalid username "%s".', $sacMemberId));
+            throw new \RuntimeException(sprintf('Could not create a new Contao Frontend User due to an invalid username "%s".', $sacMemberId));
         }
 
         if (null === $this->getModel('tl_member')) {
             $set = [
                 'username' => $sacMemberId,
                 'sacMemberId' => $sacMemberId,
-                'uuid' => $this->resourceOwner->getId(),
+                // 'uuid' => $this->getResourceOwner()->getId(),
                 'dateAdded' => time(),
-                'tstamp' => $sacMemberId,
+                'tstamp' => time(),
                 'login' => true,
             ];
 
@@ -394,5 +398,12 @@ readonly class ContaoUser
 
             $this->updateFrontendUser();
         }
+    }
+
+    private function generateRandomPassword(): string
+    {
+        $randomInt = (new Randomizer())->getInt(1111111111111, 9999999999999);
+
+        return substr(md5((string) $randomInt), 0, 12);
     }
 }

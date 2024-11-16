@@ -9,10 +9,12 @@ sac_oauth2_client:
         # defaults
         client_auth_endpoint_frontend_route: 'sac_login_redirect_frontend'
         client_auth_endpoint_backend_route: 'sac_login_redirect_backend'
-        auth_provider_endpoint_authorize: 'https://ids01.sac-cas.ch:443/oauth2/authorize'
-        auth_provider_endpoint_token: 'https://ids01.sac-cas.ch:443/oauth2/token'
-        auth_provider_endpoint_userinfo: 'https://ids01.sac-cas.ch:443/oauth2/userinfo'
+        auth_provider_endpoint_authorize: 'https://sac-cas.puzzle.ch/oauth/authorize'
+        auth_provider_endpoint_token: 'https://sac-cas.puzzle.ch/oauth/token'
+        auth_provider_endpoint_userinfo: 'https://sac-cas.puzzle.ch/de/oauth/profile'
         auth_provider_endpoint_logout: 'https://ids01.sac-cas.ch/oidc/logout'
+        auth_provider_endpoint_discovery: 'https://sac-cas.puzzle.ch/.well-known/openid-configuration'
+        #oauth_scopes: [ 'openid', 'with_roles', 'user_groups' ]
 
         # optional frontend user settings
         add_to_frontend_user_groups:

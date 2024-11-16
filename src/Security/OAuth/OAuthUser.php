@@ -5,7 +5,7 @@ declare(strict_types=1);
 /*
  * This file is part of Swiss Alpine Club Contao Login Client Bundle.
  *
- * (c) Marko Cupic 2024 <m.cupic@gmx.ch>
+ * (c) Marko Cupic <m.cupic@gmx.ch>
  * @license MIT
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code.
@@ -14,8 +14,12 @@ declare(strict_types=1);
 
 namespace Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\OAuth;
 
+use Contao\System;
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 
+/**
+ * https://github.com/hitobito/hitobito/blob/master/doc/developer/people/oauth.md#openid-connect-oidc.
+ */
 class OAuthUser implements ResourceOwnerInterface
 {
     public function __construct(
@@ -49,57 +53,66 @@ class OAuthUser implements ResourceOwnerInterface
         return $this->arrData;
     }
 
-    public function getSalutation(): string
+    public function getGender(): string
     {
-        return $this->arrData['anredecode'] ?? '';
+        return match ($this->arrData['gender'] ?? '') {
+            'm' => 'male',
+            'w' => 'female',
+            default => 'other',
+        };
     }
 
     public function getLastName(): string
     {
-        return $this->arrData['familienname'] ?? '';
+        return $this->arrData['last_name'] ?? '';
     }
 
     public function getFirstName(): string
     {
-        return $this->arrData['vorname'] ?? '';
+        return $this->arrData['first_name'] ?? '';
     }
 
     /**
-     * Returns the full name (e.g Fritz Muster).
+     * Returns the full name (e.g Muster Fritz).
      */
     public function getFullName(): string
     {
-        return $this->arrData['name'] ?? '';
+        return trim($this->arrData['last_name'].' '.$this->arrData['first_name']);
     }
 
     public function getStreet(): string
     {
-        return $this->arrData['strasse'] ?? '';
+        return $this->arrData['address'] ?? '';
     }
 
     public function getPostal(): string
     {
-        return $this->arrData['plz'] ?? '';
+        return $this->arrData['zip_code'] ?? '';
     }
 
     public function getCity(): string
     {
-        return $this->arrData['ort'] ?? '';
+        return $this->arrData['town'] ?? '';
     }
 
     public function getCountryCode(): string
     {
-        return strtolower($this->arrData['land'] ?? '');
+        return strtolower($this->arrData['country'] ?? '');
+    }
+
+    public function getLanguage(): string
+    {
+        return strtolower($this->arrData['language'] ?? 'de');
     }
 
     public function getDateOfBirth(): string
     {
-        return $this->arrData['geburtsdatum'] ?? '';
+        return $this->arrData['birthday'] ?? '';
     }
 
     public function getSacMemberId(): string
     {
-        return ltrim($this->arrData['contact_number'] ?? '', '0');
+        return ltrim($this->arrData['sub'] ?? '', '0');
     }
 
     public function getEmail(): string
@@ -107,76 +120,194 @@ class OAuthUser implements ResourceOwnerInterface
         return $this->arrData['email'] ?? '';
     }
 
-    public function getPhoneMobile(): string
+    public function getPhone(): string
     {
-        return $this->arrData['telefonmobil'] ?? '';
-    }
-
-    public function getPhonePrivate(): string
-    {
-        return $this->arrData['telefonp'] ?? '';
-    }
-
-    public function getPhoneBusiness(): string
-    {
-        return $this->arrData['telefong'] ?? '';
+        return $this->arrData['phone'] ?? '';
     }
 
     public function getRolesAsString(): string
     {
-        return $this->arrData['Roles'] ?? '';
+        return json_encode($this->getRolesAsArray());
     }
 
     public function getRolesAsArray(): array
     {
-        return array_map(static fn ($item) => trim($item, '"'), explode(',', $this->arrData['Roles']));
+        return $this->arrData['roles'] ?? [];
+    }
+
+    public function getSectionMembershipIDS(): array
+    {
+        $roles = $this->getRolesAsArray();
+
+        if (empty($roles)) {
+            return [];
+        }
+
+        $arrIds = [];
+
+        foreach ($roles as $role) {
+            if (empty($role['role']) || empty($role['layer_group_id'])) {
+                continue;
+            }
+
+            $allowed = [
+                'Group::SektionsMitglieder::MitgliedZusatzsektion',
+                'Group::SektionsMitglieder::Mitglied',
+            ];
+
+            if (!\in_array($role['role'], $allowed, true)) {
+                continue;
+            }
+
+            $arrIds[] = (int) $role['layer_group_id'];
+        }
+
+        // todo: Remove the mapper once we have migrated to the new section id system.
+        // return $arrIds;
+        return array_map(fn ($id) => $this->sectionIdMapper($id), $arrIds);
     }
 
     public function getDummyResourceOwnerData(bool $isMember): array
     {
         if (true === $isMember) {
             return [
-                'telefonmobil' => '079 999 99 99',
-                'sub' => '0e592343a-2122-11e8-91a0-00505684a4ad',
-                'telefong' => '041 984 13 50',
-                'familienname' => 'Messner',
-                'strasse' => 'Schloss Juval',
-                'vorname' => 'Reinhold',
-                'Roles' => 'NAV_BULLETIN,NAV_EINZEL_00999998,NAV_D,NAV_STAMMSEKTION_S00004250,NAV_EINZEL_S00004250,NAV_EINZEL_S00004251,NAV_S00004250,NAV_F1540,NAV_BULLETIN_S00004250,Internal/everyone,NAV_NAVISION,NAV_EINZEL,NAV_MITGLIED_S00004250,NAV_HERR,NAV_F1004V,NAV_F1004V_S00004250,NAV_BULLETIN_S00004250_PAPIER',
-                'contact_number' => '999998',
-                'ort' => 'Vinschgau IT',
-                'geburtsdatum' => '25.05.1976',
-                'anredecode' => 'HERR',
-                'name' => 'Messner Reinhold',
-                'land' => 'IT',
-                'kanton' => 'ST',
-                'korrespondenzsprache' => 'D',
-                'telefonp' => '099 999 99 99',
+                'sub' => '123456',
+                'first_name' => 'Reinhold',
+                'last_name' => 'Messner',
+                'nickname' => '',
+                'company_name' => '',
+                'company' => '',
                 'email' => 'r.messner@matterhorn-kiosk.ch',
-                'plz' => '6208',
+                'address_care_of' => '',
+                'street' => 'Schloss Juwal',
+                'housenumber' => '2',
+                'postbox' => '12345',
+                'zip_code' => '8888',
+                'town' => 'Vinschgau IT',
+                'country' => 'IT',
+                'gender' => 'm', // can be w (female), m (male) or empty string (divers)
+                'language' => 'de',
+                'address' => 'Schloss Juwal 2',
+                'roles' => [
+                    [
+                        'group_id' => '1417',
+                        'group_name' => 'Mitglieder',
+                        'role' => 'Group::SektionsMitglieder::Mitglied',
+                        'role_class' => 'Group::SektionsMitglieder::Mitglied',
+                        'role_name' => 'Mitglied (Stammsektion)',
+                        'permissions' => [],
+                        'layer_group_id' => '1415', // Sektions ID
+                        'layer_group_name' => 'SAC Pilatus',
+                    ],
+                    [
+                        'group_id' => '1427',
+                        'group_name' => 'Mitglieder',
+                        'role' => 'Group::SektionsMitglieder::MitgliedZusatzsektion',
+                        'role_class' => 'Group::SektionsMitglieder::MitgliedZusatzsektion',
+                        'role_name' => 'Mitglied (Zusatzsektion)',
+                        'permissions' => [],
+                        'layer_group_id' => '1425', // Sektions ID
+                        'layer_group_name' => 'SAC Pilatus Napf',
+                    ],
+                    [
+                        'group_id' => '1571',
+                        'group_name' => 'Mitglieder',
+                        'role' => 'Group::SektionsMitglieder::MitgliedZusatzsektion',
+                        'role_class' => 'Group::SektionsMitglieder::MitgliedZusatzsektion',
+                        'role_name' => 'Mitglied (Zusatzsektion)',
+                        'permissions' => [],
+                        'layer_group_id' => '1569', // Sektions ID
+                        'layer_group_name' => 'SAC Uto',
+                    ],
+                ],
+                'picture_url' => 'https://sac-cas.puzzle.ch/packs/media/images/profile-c150952c7e2ec2cf298980d55b2bcde3.svg',
+                'membership_verify_url' => 'https://sac-cas.puzzle.ch/verify_membership/ddERxr7Jky5Ck8ZpjFZRTGg2',
+                'phone' => '077 777 77 77', // Phone number must be tagged as Haupt-Telefon in https://sac-cas.puzzle.ch/
+                'membership_years' => '3.0',
+                'user_groups' => [
+                    'SAC_member',
+                    'SAC_member_additional',
+                    'Group::SektionsMitglieder::Mitglied#1417',
+                    'Group::SektionsMitglieder::MitgliedZusatzsektion#1427',
+                    'Group::SektionsMitglieder::MitgliedZusatzsektion#1571',
+                ],
             ];
         }
 
         // Non member
         return [
-            'telefonmobil' => '079 999 99 99',
-            'sub' => '0e59877743a-2122-11e8-91a0-00505684a4ad',
-            'telefong' => '041 984 13 50',
-            'familienname' => 'Rébuffat',
-            'strasse' => 'Rue de chamois',
-            'vorname' => 'Gaston',
-            'Roles' => 'NAV_BULLETIN,NAV_EINZEL_00999999,NAV_D,NAV_STAMMSEKTION_S00009999,NAV_EINZEL_S00009999,NAV_EINZEL_S00009999,NAV_S00009999,NAV_F1540,NAV_BULLETIN_S00009999,Internal/everyone,NAV_NAVISION,NAV_EINZEL,NAV_MITGLIED_S00009999,NAV_HERR,NAV_F1004V,NAV_F1004V_S00009999,NAV_BULLETIN_S00009999_PAPIER',
-            'contact_number' => '999999',
-            'ort' => 'Chamonix FR',
-            'geburtsdatum' => '25.05.1976',
-            'anredecode' => 'HERR',
-            'name' => 'Gaston Rébuffat',
-            'land' => 'IT',
-            'kanton' => 'ST',
-            'korrespondenzsprache' => 'D',
-            'telefonp' => '099 999 99 99',
-            'email' => 'g.rebuffat@chamonix.fr',
-            'plz' => '6208',
+            'sub' => '987654',
+            'first_name' => 'Gaston',
+            'last_name' => 'Rébuffat',
+            'nickname' => '',
+            'company_name' => '',
+            'company' => '',
+            'email' => 'g.rebuffat@chamonix-montblanc.fr',
+            'address_care_of' => '',
+            'street' => 'Rue de chamois',
+            'housenumber' => '2',
+            'postbox' => '12345',
+            'zip_code' => '74056',
+            'town' => 'Chamonix FR',
+            'country' => 'FR',
+            'gender' => 'm', // can be w (female), m (male) or empty string (divers)
+            'language' => 'fr',
+            'address' => 'Rue de chamois 2',
+            'roles' => [
+                [
+                    'group_id' => '9999',
+                    'group_name' => 'Mitglieder',
+                    'role' => 'Group::SektionsMitglieder::Mitglied',
+                    'role_class' => 'Group::SektionsMitglieder::Mitglied',
+                    'role_name' => 'Mitglied (Stammsektion)',
+                    'permissions' => [],
+                    'layer_group_id' => '8999', // Sektions ID
+                    'layer_group_name' => 'SAC Sektion Fake 1',
+                ],
+                [
+                    'group_id' => '9998',
+                    'group_name' => 'Mitglieder',
+                    'role' => 'Group::SektionsMitglieder::MitgliedZusatzsektion',
+                    'role_class' => 'Group::SektionsMitglieder::MitgliedZusatzsektion',
+                    'role_name' => 'Mitglied (Zusatzsektion)',
+                    'permissions' => [],
+                    'layer_group_id' => '8998', // Sektions ID
+                    'layer_group_name' => 'SAC Sektion Fake 2',
+                ],
+                [
+                    'group_id' => '9997',
+                    'group_name' => 'Mitglieder',
+                    'role' => 'Group::SektionsMitglieder::MitgliedZusatzsektion',
+                    'role_class' => 'Group::SektionsMitglieder::MitgliedZusatzsektion',
+                    'role_name' => 'Mitglied (Zusatzsektion)',
+                    'permissions' => [],
+                    'layer_group_id' => '8997', // Sektions ID
+                    'layer_group_name' => 'SAC Sektion Fake 3',
+                ],
+            ],
+            'picture_url' => 'https://sac-cas.puzzle.ch/packs/media/images/profile-c150952c7e2ec2cf298980d55b2bcde3.svg',
+            'membership_verify_url' => 'https://sac-cas.puzzle.ch/verify_membership/ddERxr7Jky5Ck8ZpjFZRTGg2',
+            'phone' => '079 999 99 99', // Phone number must be tagged as Haupt-Telefon in https://sac-cas.puzzle.ch/
+            'membership_years' => '3.0',
+            'user_groups' => [
+                'SAC_member',
+                'SAC_member_additional',
+                'Group::SektionsMitglieder::Mitglied#1417',
+                'Group::SektionsMitglieder::MitgliedZusatzsektion#1427',
+                'Group::SektionsMitglieder::MitgliedZusatzsektion#1571',
+            ],
         ];
+    }
+
+    /**
+     * Todo: Remove the mapper once we have migrated to the new section id system.
+     */
+    private function sectionIdMapper(int $sectionId): int
+    {
+        $json = System::getContainer()->getParameter('sac_oauth2_client.oidc.section_id_mapper');
+
+        $map = json_decode($json, true);
+
+        return $map[$sectionId] ?? $sectionId;
     }
 }

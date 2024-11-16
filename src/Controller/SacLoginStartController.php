@@ -5,7 +5,7 @@ declare(strict_types=1);
 /*
  * This file is part of Swiss Alpine Club Contao Login Client Bundle.
  *
- * (c) Marko Cupic 2024 <m.cupic@gmx.ch>
+ * (c) Marko Cupic <m.cupic@gmx.ch>
  * @license MIT
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code.
@@ -30,8 +30,8 @@ use Symfony\Component\Routing\RouterInterface;
 #[Route('/ssoauth/start/frontend', name: self::LOGIN_ROUTE_FRONTEND, defaults: ['_scope' => 'frontend', '_token_check' => false])]
 class SacLoginStartController extends AbstractController
 {
-    public const LOGIN_ROUTE_BACKEND = 'swiss_alpine_club_login_backend_start';
-    public const LOGIN_ROUTE_FRONTEND = 'swiss_alpine_club_login_frontend_start';
+    public const string LOGIN_ROUTE_BACKEND = 'swiss_alpine_club_login_backend_start';
+    public const string LOGIN_ROUTE_FRONTEND = 'swiss_alpine_club_login_frontend_start';
 
     public function __construct(
         private readonly Authenticator $authenticator,

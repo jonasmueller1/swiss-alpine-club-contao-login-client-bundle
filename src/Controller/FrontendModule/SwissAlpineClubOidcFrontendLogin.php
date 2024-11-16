@@ -5,7 +5,7 @@ declare(strict_types=1);
 /*
  * This file is part of Swiss Alpine Club Contao Login Client Bundle.
  *
- * (c) Marko Cupic 2024 <m.cupic@gmx.ch>
+ * (c) Marko Cupic <m.cupic@gmx.ch>
  * @license MIT
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code.
@@ -36,7 +36,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[AsFrontendModule(SwissAlpineClubOidcFrontendLogin::TYPE, category: 'user', template: 'mod_swiss_alpine_club_oidc_frontend_login')]
 class SwissAlpineClubOidcFrontendLogin extends AbstractFrontendModuleController
 {
-    public const TYPE = 'swiss_alpine_club_oidc_frontend_login';
+    public const string TYPE = 'swiss_alpine_club_oidc_frontend_login';
 
     public function __construct(
         private readonly ContaoFramework $framework,

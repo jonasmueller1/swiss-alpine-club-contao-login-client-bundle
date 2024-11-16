@@ -5,7 +5,7 @@ declare(strict_types=1);
 /*
  * This file is part of Swiss Alpine Club Contao Login Client Bundle.
  *
- * (c) Marko Cupic 2024 <m.cupic@gmx.ch>
+ * (c) Marko Cupic <m.cupic@gmx.ch>
  * @license MIT
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code.
@@ -28,6 +28,7 @@ use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\Authenticator\Aut
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\Config\Loader\LoaderResolverInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Routing\RouteCollection;
 
 class Plugin implements ConfigPluginInterface, BundlePluginInterface, RoutingPluginInterface, ExtensionPluginInterface
 {
@@ -48,12 +49,12 @@ class Plugin implements ConfigPluginInterface, BundlePluginInterface, RoutingPlu
         $loader->load('@MarkocupicSwissAlpineClubContaoLoginClientBundle/config/config.yaml');
     }
 
-    public function getRouteCollection(LoaderResolverInterface $resolver, KernelInterface $kernel)
+    public function getRouteCollection(LoaderResolverInterface $resolver, KernelInterface $kernel): RouteCollection
     {
         return $resolver
-            ->resolve(__DIR__.'/../../config/routes.yaml')
-            ->load(__DIR__.'/../../config/routes.yaml')
-        ;
+            ->resolve(__DIR__.'/../Controller')
+            ->load(__DIR__.'/../Controller')
+            ;
     }
 
     public function getExtensionConfig($extensionName, array $extensionConfigs, ContainerBuilder $container): array

@@ -5,7 +5,7 @@ declare(strict_types=1);
 /*
  * This file is part of Swiss Alpine Club Contao Login Client Bundle.
  *
- * (c) Marko Cupic 2024 <m.cupic@gmx.ch>
+ * (c) Marko Cupic <m.cupic@gmx.ch>
  * @license MIT
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code.
@@ -33,9 +33,9 @@ $GLOBALS['TL_LANG']['ERR']['sacOidcLoginError_missingAuthCode_matter'] = 'Leider
 $GLOBALS['TL_LANG']['ERR']['sacOidcLoginError_missingAuthCode_howToFix'] = 'Bitte probiere dich nochmals einzuloggen.';
 $GLOBALS['TL_LANG']['ERR']['sacOidcLoginError_missingAuthCode_explain'] = '';
 
-$GLOBALS['TL_LANG']['ERR']['sacOidcLoginError_resourceOwnerHasInvalidUuid_matter'] = 'Hallo{{br}}Schön bist du hier. Leider hat die Überprüfung deiner vom Identity Provider an uns übermittelten Daten fehlgeschlagen. Es wurde keine UUID übermittelt.';
-$GLOBALS['TL_LANG']['ERR']['sacOidcLoginError_resourceOwnerHasInvalidUuid_howToFix'] = 'Bitte logge dich auf https://www.sac-cas.ch mit deinem Account ein und überprüfe die Richtigkeit deiner Eingaben.';
-$GLOBALS['TL_LANG']['ERR']['sacOidcLoginError_resourceOwnerHasInvalidUuid_explain'] = '';
+$GLOBALS['TL_LANG']['ERR']['sacOidcLoginError_resourceOwnerHasInvalidSacMemberId_matter'] = 'Hallo{{br}}Schön bist du hier. Leider hat die Überprüfung deiner vom Identity Provider an uns übermittelten Daten fehlgeschlagen. Es wurde keine SAC Mitgliedernummer übermittelt.';
+$GLOBALS['TL_LANG']['ERR']['sacOidcLoginError_resourceOwnerHasInvalidSacMemberId_howToFix'] = 'Bitte logge dich auf https://www.sac-cas.ch mit deinem Account ein und überprüfe die Richtigkeit deiner Eingaben.';
+$GLOBALS['TL_LANG']['ERR']['sacOidcLoginError_resourceOwnerHasInvalidSacMemberId_explain'] = '';
 
 $GLOBALS['TL_LANG']['ERR']['sacOidcLoginError_resourceOwnerHasInvalidEmail_matter'] = 'Hallo %s{{br}}Schön bist du hier. Leider hat die Überprüfung deiner vom Identity Provider an uns übermittelten Daten fehlgeschlagen.';
 $GLOBALS['TL_LANG']['ERR']['sacOidcLoginError_resourceOwnerHasInvalidEmail_howToFix'] = 'Du hast noch keine gültige E-Mail-Adresse hinterlegt. Bitte logge dich auf https://www.sac-cas.ch mit deinem Account ein und hinterlege deine E-Mail-Adresse.';

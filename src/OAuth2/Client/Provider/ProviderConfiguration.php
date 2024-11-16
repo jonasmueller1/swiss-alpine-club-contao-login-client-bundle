@@ -5,7 +5,7 @@ declare(strict_types=1);
 /*
  * This file is part of Swiss Alpine Club Contao Login Client Bundle.
  *
- * (c) Marko Cupic 2024 <m.cupic@gmx.ch>
+ * (c) Marko Cupic <m.cupic@gmx.ch>
  * @license MIT
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code.
@@ -40,6 +40,8 @@ readonly class ProviderConfiguration
         private string $backendRedirectRoute,
         #[Autowire('%sac_oauth2_client.oidc.client_auth_endpoint_frontend_route%')]
         private string $frontendRedirectRoute,
+        #[Autowire('%sac_oauth2_client.oidc.oauth_scopes%')]
+        private array $oauthScopes,
     ) {
     }
 
@@ -93,7 +95,7 @@ readonly class ProviderConfiguration
 
     public function getScopes(): array
     {
-        return ['openid'];
+        return $this->oauthScopes;
     }
 
     public function all(): array
@@ -104,7 +106,7 @@ readonly class ProviderConfiguration
             'clientSecret' => $this->getClientSecret() ?? '',
             // Absolute url to the "authorize" endpoint
             'urlAuthorize' => $this->getAuthorizeEndpoint() ?? '',
-            // Absolute url to the "get access token" endpoint
+            // Absolute url to the 'get access token" endpoint
             'urlAccessToken' => $this->getTokenEndpoint() ?? '',
             // Absolute url to the "get resource owner details endpoint"
             'urlResourceOwnerDetails' => $this->getUserinfoEndpoint() ?? '',

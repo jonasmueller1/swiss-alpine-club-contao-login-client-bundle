@@ -22,7 +22,7 @@
         "source": "https://github.com/markocupic/swiss-alpine-club-contao-login-client-bundle"
     },
     "require": {
-        "php": "^8.2",
+        "php": "^8.3",
         "league/oauth2-client": "^2.6",
         "contao/core-bundle": "^5.3",
         "codefog/contao-haste": "^5.1",

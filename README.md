@@ -5,6 +5,8 @@
 Diese Erweiterung für das [Contao CMS](https://contao.org) ermöglicht die Implementierung
 des Single Sign-On Logins des [Schweizerischen Alpen Clubs (SAC)](https://www.sac-cas.ch).
 
+Siehe auch [OAUTH-Dokumentation](https://github.com/hitobito/hitobito/blob/master/doc/developer/people/oauth.md#openid-connect-oidc)
+
 SAC Mitglieder der Sektion können sich mit ihrer Mitgliedsnummer und ihrem Passwort, welches sie auf der Webseite des [SAC Zentralverbandes](https://www.sac-cas.ch) verwalten, im Front- sowie im Backend anmelden.
 
 | SAC Login Button                                                                                          | Login Formular Schweizerischer Alpenclub                       |
@@ -44,9 +46,10 @@ sac_oauth2_client:
     client_auth_endpoint_frontend_route: 'sac_login_redirect_frontend'
     client_auth_endpoint_backend_route: 'sac_login_redirect_backend'
     debug_mode: false # Log resource owners details (Contao backend log)
-    auth_provider_endpoint_authorize: 'https://ids01.sac-cas.ch:443/oauth2/authorize'
-    auth_provider_endpoint_token: 'https://ids01.sac-cas.ch:443/oauth2/token'
-    auth_provider_endpoint_userinfo: 'https://ids01.sac-cas.ch:443/oauth2/userinfo'
+    auth_provider_endpoint_authorize: 'https://sac-cas.puzzle.ch/oauth/authorizee'
+    auth_provider_endpoint_token: 'https://sac-cas.puzzle.ch/oauth/token'
+    auth_provider_endpoint_userinfo: 'https://sac-cas.puzzle.ch/de/oauth/profile'
+    auth_provider_endpoint_discovery: 'https://sac-cas.puzzle.ch/.well-known/openid-configuration'
     auth_provider_endpoint_logout: 'https://ids01.sac-cas.ch/oidc/logout'
 
     # optional frontend user settings

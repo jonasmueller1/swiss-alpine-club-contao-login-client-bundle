@@ -5,7 +5,7 @@ declare(strict_types=1);
 /*
  * This file is part of Swiss Alpine Club Contao Login Client Bundle.
  *
- * (c) Marko Cupic 2024 <m.cupic@gmx.ch>
+ * (c) Marko Cupic <m.cupic@gmx.ch>
  * @license MIT
  * For the full copyright and license information,
  * please view the LICENSE file that was distributed with this source code.
@@ -54,8 +54,11 @@ class MarkocupicSwissAlpineClubContaoLoginClientExtension extends Extension
         $container->setParameter($rootKey.'.oidc.auth_provider_endpoint_authorize', $config['oidc']['auth_provider_endpoint_authorize']);
         $container->setParameter($rootKey.'.oidc.auth_provider_endpoint_token', $config['oidc']['auth_provider_endpoint_token']);
         $container->setParameter($rootKey.'.oidc.auth_provider_endpoint_userinfo', $config['oidc']['auth_provider_endpoint_userinfo']);
+        $container->setParameter($rootKey.'.oidc.auth_provider_endpoint_discovery', $config['oidc']['auth_provider_endpoint_discovery']);
         $container->setParameter($rootKey.'.oidc.add_to_frontend_user_groups', $config['oidc']['add_to_frontend_user_groups']);
         $container->setParameter($rootKey.'.oidc.auth_provider_endpoint_logout', $config['oidc']['auth_provider_endpoint_logout']);
+        $container->setParameter($rootKey.'.oidc.oauth_scopes', $config['oidc']['oauth_scopes']);
+        $container->setParameter($rootKey.'.oidc.section_id_mapper', $config['oidc']['section_id_mapper']);
         $container->setParameter($rootKey.'.oidc.auto_create_frontend_user', $config['oidc']['auto_create_frontend_user']);
         $container->setParameter($rootKey.'.oidc.allow_frontend_login_to_sac_members_only', $config['oidc']['allow_frontend_login_to_sac_members_only']);
         $container->setParameter($rootKey.'.oidc.allow_frontend_login_to_predefined_section_members_only', $config['oidc']['allow_frontend_login_to_predefined_section_members_only']);
