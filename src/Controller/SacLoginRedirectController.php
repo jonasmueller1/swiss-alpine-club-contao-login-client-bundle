@@ -29,6 +29,6 @@ class SacLoginRedirectController extends AbstractController
     public function __invoke(Request $request, string $_scope): Response
     {
         // This point should never be reached.
-        return new Response('Something went wrong!');
+        return new Response('Could not find an authenticator for this route!');
     }
 }
