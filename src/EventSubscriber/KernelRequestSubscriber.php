@@ -16,6 +16,7 @@ namespace Markocupic\SwissAlpineClubContaoLoginClientBundle\EventSubscriber;
 
 use Contao\CoreBundle\Routing\ScopeMatcher;
 use JetBrains\PhpStorm\ArrayShape;
+use Symfony\Component\Asset\Packages;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
@@ -26,6 +27,7 @@ readonly class KernelRequestSubscriber implements EventSubscriberInterface
     public function __construct(
         private ScopeMatcher $scopeMatcher,
         private UrlGeneratorInterface $router,
+        private Packages $packages,
     ) {
     }
 
@@ -39,13 +41,16 @@ readonly class KernelRequestSubscriber implements EventSubscriberInterface
     {
         $request = $e->getRequest();
 
-        $GLOBALS['TL_JAVASCRIPT'][] = 'bundles/markocupicswissalpineclubcontaologinclient/js/ids-kill-session.min.js|static';
-        $GLOBALS['TL_JAVASCRIPT'][] = 'bundles/markocupicswissalpineclubcontaologinclient/js/login-button-animation.min.js|static';
-        $GLOBALS['TL_CSS'][] = 'bundles/markocupicswissalpineclubcontaologinclient/css/sac_login_button.css|static';
+        // Scripts
+        $GLOBALS['TL_JAVASCRIPT'][] = $this->packages->getUrl('js/ids-kill-session.js', 'markocupic_swiss_alpine_club_contao_login_client');
+        $GLOBALS['TL_JAVASCRIPT'][] = $this->packages->getUrl('js/login-button-animation.js', 'markocupic_swiss_alpine_club_contao_login_client');
+
+        // Styles
+        $GLOBALS['TL_CSS'][] = $this->packages->getUrl('styles/sac_login_button.css', 'markocupic_swiss_alpine_club_contao_login_client');
 
         if ($this->scopeMatcher->isBackendRequest($request)) {
             if (str_contains($request->getUri(), $this->router->generate('contao_backend_login'))) {
-                $GLOBALS['TL_CSS'][] = 'bundles/markocupicswissalpineclubcontaologinclient/css/backend.min.css';
+                $GLOBALS['TL_CSS'][] = $this->packages->getUrl('styles/backend.css', 'markocupic_swiss_alpine_club_contao_login_client');
             }
         }
     }

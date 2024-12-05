@@ -24,7 +24,8 @@ use Contao\ManagerPlugin\Config\ExtensionPluginInterface;
 use Contao\ManagerPlugin\Routing\RoutingPluginInterface;
 use Markocupic\SacEventToolBundle\MarkocupicSacEventToolBundle;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\MarkocupicSwissAlpineClubContaoLoginClientBundle;
-use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\Authenticator\Authenticator;
+//use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\Authenticator\HitobitoAuthenticator;
+use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\Authenticator\HitobitoAuthenticator;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\Config\Loader\LoaderResolverInterface;
 use Symfony\Component\HttpKernel\KernelInterface;
@@ -65,11 +66,11 @@ class Plugin implements ConfigPluginInterface, BundlePluginInterface, RoutingPlu
 
         foreach ($extensionConfigs as &$extensionConfig) {
             if (isset($extensionConfig['firewalls'], $extensionConfig['firewalls']['contao_frontend'])) {
-                $extensionConfig['firewalls']['contao_frontend']['custom_authenticators'][] = Authenticator::class;
+                $extensionConfig['firewalls']['contao_frontend']['custom_authenticators'][] = HitobitoAuthenticator::class;
             }
 
             if (isset($extensionConfig['firewalls'], $extensionConfig['firewalls']['contao_backend'])) {
-                $extensionConfig['firewalls']['contao_backend']['custom_authenticators'][] = Authenticator::class;
+                $extensionConfig['firewalls']['contao_backend']['custom_authenticators'][] = HitobitoAuthenticator::class;
             }
         }
 

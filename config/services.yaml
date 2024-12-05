@@ -7,12 +7,12 @@ services:
         resource: ../src/
         exclude: [
             ../src/{ DependencyInjection,Model,Session,Exception },
-            ../src/Security/Authenticator/Exception/*.php,
-            ../src/OAuth2/Client/Provider/SwissAlpineClub.php,
-            ../src/OAuth2/Client/OAuth2Client.php,
-            ../src/Security/OAuth/OAuthUser.php,
             ../src/Config/ContaoLogConfig.php,
             ../src/ErrorMessage/ErrorMessage.php,
+            ../src/OAuth2/Client/OAuth2Client.php,
+            ../src/OAuth2/Client/Provider/SwissAlpineClub.php,
+            ../src/Security/Authenticator/Exception/*.php,
+            ../src/Security/OAuth/OAuthUser.php,
             ../src/Security/User/ContaoUser.php,
         ]
 

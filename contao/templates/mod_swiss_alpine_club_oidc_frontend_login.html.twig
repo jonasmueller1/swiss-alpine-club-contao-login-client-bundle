@@ -1,5 +1,5 @@
-{% do addCssResource('bundles/markocupicswissalpineclubcontaologinclient/css/sac_login_button.css|static') %}
-{% do addCssResource('bundles/markocupicswissalpineclubcontaologinclient/css/frontend.css|static') %}
+{% do addCssResource(insert_tag('asset::styles/sac_login_button.css::markocupic_swiss_alpine_club_contao_login_client')) %}
+{% do addCssResource(insert_tag('asset::styles/frontend.css::markocupic_swiss_alpine_club_contao_login_client')) %}
 
 {% extends '@Contao/block_unsearchable' %}
 
@@ -14,7 +14,7 @@
                 <input type="hidden" name="_module_id" value="{{ id }}">
                 <div class="sac-login-button-group sac-login-button-group-lg">
                     <div class="sac-login-button-prepend">
-                        <img src="bundles/markocupicswissalpineclubcontaologinclient/img/logo_sac_small.svg" alt="SAC Logo" class="sac-login-button-prepend-icon">
+                        <img src="{{ insert_tag('asset::img/logo_sac_small.svg::markocupic_swiss_alpine_club_contao_login_client') }}" alt="SAC Logo" class="sac-login-button-prepend-icon">
                     </div>
                     <button type="submit"><span class="sac-login-button-text">{{ btn_lbl }} <span style="font-size:1rem;">&#8594</span></span></button>
                 </div>

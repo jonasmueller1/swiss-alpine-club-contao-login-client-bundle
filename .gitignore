@@ -1,3 +1,16 @@
-# Created by .ignore support plugin (hsz.mobi)
+.git/
+
+# Jetbrains
+/.idea/*
+
+# tools
+/vendor/
+/tools/*/vendor
 /composer.lock
-/vendor
+/.php-cs-fixer.cache
+/tools/phpunit/.phpunit.result.cache
+/contao/languages/de/*
+
+# Webpack
+/node_modules/
+/package-lock.json

@@ -15,12 +15,14 @@ declare(strict_types=1);
 namespace Markocupic\SwissAlpineClubContaoLoginClientBundle\OAuth2\Client\Provider;
 
 use League\OAuth2\Client\Provider\AbstractProvider;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 readonly class ProviderFactory
 {
     public function __construct(
         private ProviderConfiguration $providerConfiguration,
+        private EventDispatcherInterface $eventDispatcher,
     ) {
     }
 
@@ -29,7 +31,7 @@ readonly class ProviderFactory
         $resolver = new OptionsResolver();
         $this->configureOptions($resolver);
 
-        return new Hitobito($resolver->resolve($this->providerConfiguration->all()), []);
+        return new Hitobito($resolver->resolve($this->providerConfiguration->all()), [], $this->eventDispatcher);
     }
 
     protected function configureOptions(OptionsResolver $resolver): void

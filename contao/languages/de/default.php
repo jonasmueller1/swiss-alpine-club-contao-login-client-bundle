@@ -15,7 +15,7 @@ declare(strict_types=1);
 /*
  * Miscellaneous
  */
-$GLOBALS['TL_LANG']['MSC']['loginWithSacSso'] = 'Mit SAC Login anmelden';
+$GLOBALS['TL_LANG']['MSC']['loginWithSacSso'] = 'Anmelden mit SAC/CAS-Portal';
 
 // Error management
 $GLOBALS['TL_LANG']['MSC']['infoMatter'] = 'Information';

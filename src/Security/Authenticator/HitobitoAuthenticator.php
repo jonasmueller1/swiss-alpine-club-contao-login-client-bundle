@@ -45,7 +45,6 @@ use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\Authenticator\Exc
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\Authenticator\Exception\UnexpectedAuthenticationException;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\OAuth\OAuthUser;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\OAuth\OAuthUserChecker;
-use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\User\ContaoUser;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\User\ContaoUserFactory;
 use Psr\Log\LoggerInterface;
 use Scheb\TwoFactorBundle\Security\Http\Authenticator\TwoFactorAuthenticator;
@@ -65,7 +64,7 @@ use Symfony\Component\Security\Http\Authenticator\Passport\SelfValidatingPasspor
 use Symfony\Component\Security\Http\SecurityRequestAttributes;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-class Authenticator extends AbstractAuthenticator
+class HitobitoAuthenticator extends AbstractAuthenticator
 {
     public const string NAME = 'SAC_OAUTH2_AUTHENTICATOR';
 
@@ -132,7 +131,8 @@ class Authenticator extends AbstractAuthenticator
         // Fetch the authorization URL from the provider;
         // this returns the urlAuthorize option and generates and applies any necessary parameters
         // (e.g. state).
-        $authorizationUrl = $oAuth2Client->getOAuth2Provider()->getAuthorizationUrl();
+        //$authorizationUrl = $oAuth2Client->getOAuth2Provider()->getAuthorizationUrl(['response_type' => 'id_token','response_mode' => 'query']);
+        $authorizationUrl = $oAuth2Client->getOAuth2Provider()->getAuthorizationUrl(['response_mode' => 'query']);
 
         $sessionBag = $this->getSessionBag($request);
         $sessionBag->set('oauth2state', $oAuth2Client->getOAuth2Provider()->getState());
@@ -311,9 +311,6 @@ class Authenticator extends AbstractAuthenticator
             $contaoUser->updateFrontendUser();
             $contaoUser->updateBackendUser();
 
-            // Save the refresh token to the user entity
-            $this->saveRefreshToken($accessToken->getRefreshToken(), $contaoUser, $contaoScope);
-
             return new SelfValidatingPassport(new UserBadge($contaoUser->getIdentifier()));
         } catch (IdentityProviderException|AuthenticationException $e) {
             throw new AuthenticationException($e->getMessage());
@@ -324,7 +321,7 @@ class Authenticator extends AbstractAuthenticator
                 $request,
                 ErrorMessage::LEVEL_ERROR,
                 UnexpectedAuthenticationException::class,
-                $resourceOwner,
+                $resourceOwner ?? null,
             );
         }
     }
@@ -478,18 +475,5 @@ class Authenticator extends AbstractAuthenticator
         }
 
         throw new $exceptionClass($exceptionClass::MESSAGE);
-    }
-
-    private function saveRefreshToken(string $refreshToken, ContaoUser $contaoUser, string $contaoScope): void
-    {
-        if (ContaoCoreBundle::SCOPE_BACKEND === $contaoScope) {
-            $model = $contaoUser->getModel('tl_user');
-            $model->refreshToken = $refreshToken;
-        } else {
-            $model = $contaoUser->getModel('tl_member');
-            $model->refreshToken = $refreshToken;
-        }
-
-        $model->save();
     }
 }

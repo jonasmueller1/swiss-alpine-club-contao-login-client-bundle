@@ -8,7 +8,7 @@
             <input type="hidden" name="_always_use_target_path" value="{{ always_use_target_path }}">
             <div class="sac-login-button-group">
                 <div class="sac-login-button-prepend">
-                    <img src="/bundles/markocupicswissalpineclubcontaologinclient/img/logo_sac_small.svg" alt="SAC Logo" class="sac-login-button-prepend-icon">
+                    <img src="{{ insert_tag('asset::img/logo_sac_small.svg::markocupic_swiss_alpine_club_contao_login_client') }}" alt="SAC Logo" class="sac-login-button-prepend-icon">
                 </div>
                 <button type="submit"><span class="sac-login-button-text">{{ 'MSC.loginWithSacSso'|trans({}, 'contao_default') }} <span style="font-size:1rem">&#8594</span></span></button>
             </div>

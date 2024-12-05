@@ -16,7 +16,7 @@ namespace Markocupic\SwissAlpineClubContaoLoginClientBundle\Controller;
 
 use Contao\CoreBundle\Routing\ScopeMatcher;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\OAuth2\Client\OAuth2ClientFactory;
-use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\Authenticator\Authenticator;
+use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\Authenticator\HitobitoAuthenticator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -34,7 +34,7 @@ class SacLoginStartController extends AbstractController
     public const string LOGIN_ROUTE_FRONTEND = 'swiss_alpine_club_login_frontend_start';
 
     public function __construct(
-        private readonly Authenticator $authenticator,
+        private readonly HitobitoAuthenticator $hitobitoAuthenticator,
         private readonly OAuth2ClientFactory $oAuth2ClientFactory,
         private readonly RouterInterface $router,
         private readonly ScopeMatcher $scopeMatcher,
@@ -79,6 +79,6 @@ class SacLoginStartController extends AbstractController
             $oAuthClient->setModuleId($request->request->get('_module_id'));
         }
 
-        return $this->authenticator->start($request);
+        return $this->hitobitoAuthenticator->start($request);
     }
 }

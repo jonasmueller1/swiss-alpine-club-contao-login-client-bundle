@@ -17,7 +17,3 @@ use Contao\DataContainer;
 // Fields
 $GLOBALS['TL_DCA']['tl_member']['fields']['loginAttempts']['sorting'] = true;
 $GLOBALS['TL_DCA']['tl_member']['fields']['loginAttempts']['flag'] = DataContainer::SORT_DESC;
-$GLOBALS['TL_DCA']['tl_member']['fields']['refreshToken'] = [
-    'sql'  => "blob NULL",
-    'eval' => ['doNotShow' => true],
-];
