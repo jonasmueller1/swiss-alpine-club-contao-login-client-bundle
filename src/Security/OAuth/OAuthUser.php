@@ -304,7 +304,7 @@ class OAuthUser implements ResourceOwnerInterface
      */
     private function sectionIdMapper(int $sectionId): int
     {
-        $json = System::getContainer()->getParameter('sac_oauth2_client.oidc.section_id_mapper');
+        $json = System::getContainer()->getParameter('sac_oauth2_client.oidc.section_id_map');
 
         $map = json_decode($json, true);
 

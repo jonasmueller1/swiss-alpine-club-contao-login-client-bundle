@@ -63,7 +63,7 @@ class Configuration implements ConfigurationInterface
                             ->info('Array of allowed scopes: ["email", "name", "with_roles", "openid", "api", "events", "groups", "people", "invoices", "mailing_lists", "user_groups"].')
                             ->defaultValue(['openid', 'with_roles', 'user_group'])
                         ->end()
-                        ->scalarNode('section_id_mapper')
+                        ->scalarNode('section_id_map')
                             ->cannotBeEmpty()
                             ->defaultValue('{"1415":4250,"1420":4251,"1425":4252,"1430":4253,"1435":4254}')
                         ->end()
