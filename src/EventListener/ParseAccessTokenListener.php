@@ -47,7 +47,7 @@ class ParseAccessTokenListener
         $set = [
             'tstamp' => time(),
             'uuid' => $uuid,
-            'expires' => time() + 3600 * 24 * 7,
+            'expires' => time() + 3600 * 24,
             'id_token' => $response['id_token'],
         ];
 

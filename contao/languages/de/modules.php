@@ -12,7 +12,9 @@ declare(strict_types=1);
  * @link https://github.com/markocupic/swiss-alpine-club-contao-login-client-bundle
  */
 
+use Markocupic\SwissAlpineClubContaoLoginClientBundle\Controller\FrontendModule\SacOauthFrontendLoginController;
+
 /*
  * Front end modules
  */
-$GLOBALS['TL_LANG']['FMD']['swiss_alpine_club_oidc_frontend_login'] = ['Swiss Alpine Club OIDC (Single Sign-On) Frontend Login', 'Single Sign On OpenId Connect SAC Login'];
+$GLOBALS['TL_LANG']['FMD'][SacOauthFrontendLoginController::TYPE] = ['SAC/CAS-Portal Frontend Login', 'Login with SAC/CAS-Portal Login.'];

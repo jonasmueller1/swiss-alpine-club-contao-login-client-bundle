@@ -1,3 +1,3 @@
-.mod_swiss_alpine_club_oidc_frontend_login .error-box p.error-matter, .mod_swiss_alpine_club_oidc_frontend_login .error-box .error-how-to-fix, .mod_swiss_alpine_club_oidc_frontend_login .error-box p.error-explain {
+.sac_oauth_frontend_login .error-box p.error-matter, .sac_oauth_frontend_login .error-box .error-how-to-fix, .sac_oauth_frontend_login .error-box p.error-explain {
   background-color: #9d081075;
 }

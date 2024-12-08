@@ -22,7 +22,7 @@ window.addEventListener('DOMContentLoaded', () => {
             e.stopImmediatePropagation();
 
             if (link.hasAttribute('data-href')) {
-                link.text = 'du wirst ausgeloggt...'
+                link.text = link.dataset.logoutLabel ?? 'du wirst abgemeldet …';
                 link.removeAttribute('data-href');
                 logout('frontend', link.getAttribute('href'), link.dataset.targetpath);
             }
