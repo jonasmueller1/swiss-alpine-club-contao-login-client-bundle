@@ -111,16 +111,6 @@ class Hitobito extends AbstractProvider
         return $this->urlResourceOwnerDetails;
     }
 
-    /**
-     * Requests and returns the resource owner of given access token.
-     */
-    public function getResourceOwner(AccessToken $token): ResourceOwnerInterface
-    {
-        $response = $this->fetchResourceOwnerDetails($token);
-
-        return $this->createResourceOwner($response, $token);
-    }
-
     protected function createResourceOwner(array $response, AccessToken $token): ResourceOwnerInterface
     {
         return new OAuthUser($response, self::ACCESS_TOKEN_RESOURCE_OWNER_ID);
