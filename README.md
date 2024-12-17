@@ -9,10 +9,10 @@ Siehe auch [OAUTH-Dokumentation](https://github.com/hitobito/hitobito/blob/maste
 
 SAC Mitglieder der Sektion können sich mit ihrer Mitgliedsnummer und ihrem Passwort, welches sie auf der Webseite des [SAC Zentralverbandes](https://www.sac-cas.ch) verwalten, im Front- sowie im Backend anmelden.
 
-| SAC Login Button                                                                                          | Login Formular Schweizerischer Alpenclub                       |
-|-----------------------------------------------------------------------------------------------------------|----------------------------------------------------------------|
-| ![SAC Login](docs/img/screenshot_backend_readme.png)                                                      | ![SAC Login](docs/img/screenshot_remote_login_form_readme.png) |
-| Bei Klick auf den Login Button erfolgt die Weiterleitug zum Login Formular des Schweizerischen Alpenclubs | Login Formular Schweizerischer Alpenclub                       |
+| SAC Login Button                                                                                          | Login Formular Schweizerischer Alpenclub                            |
+|-----------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|
+| ![SAC Login](docs/img/frontend_login.png)                                                                 | ![SAC/CAS Portal](docs/img/login_form_sac_cas.png) |
+| Bei Klick auf den Login Button erfolgt die Weiterleitug zum Login Formular des Schweizerischen Alpenclubs | Login Formular Schweizerischer Alpenclub                            |
 
 ## Dependencies
 
