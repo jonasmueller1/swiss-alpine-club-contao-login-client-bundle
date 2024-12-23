@@ -18,6 +18,7 @@ use Contao\CoreBundle\Routing\ScopeMatcher;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\OAuth2\Client\OAuth2ClientFactory;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\Security\Authenticator\HitobitoAuthenticator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,16 +26,18 @@ use Symfony\Component\HttpFoundation\UriSigner;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Security\Http\Authenticator\AuthenticatorInterface;
 
 #[Route('/ssoauth/start/backend', name: self::LOGIN_ROUTE_BACKEND, defaults: ['_scope' => 'backend', '_token_check' => false])]
 #[Route('/ssoauth/start/frontend', name: self::LOGIN_ROUTE_FRONTEND, defaults: ['_scope' => 'frontend', '_token_check' => false])]
-class SacLoginStartController extends AbstractController
+class StartController extends AbstractController
 {
     public const string LOGIN_ROUTE_BACKEND = 'swiss_alpine_club_login_backend_start';
     public const string LOGIN_ROUTE_FRONTEND = 'swiss_alpine_club_login_frontend_start';
 
     public function __construct(
-        private readonly HitobitoAuthenticator $hitobitoAuthenticator,
+        #[Autowire(service: HitobitoAuthenticator::class)]
+        private readonly AuthenticatorInterface $authenticator,
         private readonly OAuth2ClientFactory $oAuth2ClientFactory,
         private readonly RouterInterface $router,
         private readonly ScopeMatcher $scopeMatcher,
@@ -79,6 +82,6 @@ class SacLoginStartController extends AbstractController
             $oAuthClient->setModuleId($request->request->get('_module_id'));
         }
 
-        return $this->hitobitoAuthenticator->start($request);
+        return $this->authenticator->authorize($request);
     }
 }

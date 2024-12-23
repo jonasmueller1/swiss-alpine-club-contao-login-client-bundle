@@ -23,7 +23,7 @@ use Contao\FrontendUser;
 use Contao\ModuleModel;
 use Contao\PageModel;
 use Contao\StringUtil;
-use Markocupic\SwissAlpineClubContaoLoginClientBundle\Controller\SacLoginStartController;
+use Markocupic\SwissAlpineClubContaoLoginClientBundle\Controller\StartController;
 use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
@@ -61,7 +61,7 @@ class SacOauthFrontendLoginController extends AbstractFrontendModuleController
             $stringUtilAdapter = $this->framework->getAdapter(StringUtil::class);
 
             // Generate the form action
-            $action = $this->router->generate(SacLoginStartController::LOGIN_ROUTE_FRONTEND, [], UrlGeneratorInterface::ABSOLUTE_URL);
+            $action = $this->router->generate(StartController::LOGIN_ROUTE_FRONTEND, [], UrlGeneratorInterface::ABSOLUTE_URL);
             $template->set('action', $this->uriSigner->sign($action));
 
             // Set the target path

@@ -21,7 +21,7 @@ use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/_oauth2_login/hitobito/frontend', name: self::ROUTE_FRONTEND, defaults: ['_scope' => 'frontend'])]
 #[Route('/_oauth2_login/hitobito/backend', name: self::ROUTE_BACKEND, defaults: ['_scope' => 'backend'])]
-class SacLoginRedirectController extends AbstractController
+class RedirectController extends AbstractController
 {
     public const string ROUTE_BACKEND = 'sac_login_redirect_backend';
     public const string ROUTE_FRONTEND = 'sac_login_redirect_frontend';

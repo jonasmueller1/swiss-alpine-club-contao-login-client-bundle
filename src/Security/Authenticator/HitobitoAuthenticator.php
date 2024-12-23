@@ -27,7 +27,7 @@ use Doctrine\DBAL\Types\Types;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\ResourceOwnerInterface;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\Config\ContaoLogConfig;
-use Markocupic\SwissAlpineClubContaoLoginClientBundle\Controller\SacLoginRedirectController;
+use Markocupic\SwissAlpineClubContaoLoginClientBundle\Controller\RedirectController;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\ErrorMessage\ErrorMessage;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\ErrorMessage\ErrorMessageManager;
 use Markocupic\SwissAlpineClubContaoLoginClientBundle\OAuth2\Client\OAuth2Client;
@@ -119,12 +119,12 @@ class HitobitoAuthenticator extends AbstractAuthenticator
         }
 
         return match ($request->attributes->get('_route')) {
-            SacLoginRedirectController::ROUTE_BACKEND, SacLoginRedirectController::ROUTE_FRONTEND => true,
+            RedirectController::ROUTE_BACKEND, RedirectController::ROUTE_FRONTEND => true,
             default => false,
         };
     }
 
-    public function start(Request $request, AuthenticationException|null $authException = null): RedirectResponse
+    public function authorize(Request $request, AuthenticationException|null $authException = null): RedirectResponse
     {
         $oAuth2Client = $this->oAuth2ClientFactory->createOAuth2Client($request);
 

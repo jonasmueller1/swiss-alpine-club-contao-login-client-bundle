@@ -16,7 +16,7 @@ namespace Markocupic\SwissAlpineClubContaoLoginClientBundle\EventListener\Contao
 
 use Contao\CoreBundle\DependencyInjection\Attribute\AsHook;
 use Contao\CoreBundle\InsertTag\InsertTagParser;
-use Markocupic\SwissAlpineClubContaoLoginClientBundle\Controller\SacLoginStartController;
+use Markocupic\SwissAlpineClubContaoLoginClientBundle\Controller\StartController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\UriSigner;
@@ -59,7 +59,7 @@ readonly class ParseBackendTemplateListener
 
             $template = [];
 
-            $action = $this->router->generate(SacLoginStartController::LOGIN_ROUTE_BACKEND, [], UrlGeneratorInterface::ABSOLUTE_URL);
+            $action = $this->router->generate(StartController::LOGIN_ROUTE_BACKEND, [], UrlGeneratorInterface::ABSOLUTE_URL);
             $template['action'] = $this->uriSigner->sign($action);
             $template['target_path'] = $this->getTargetPath($strContent);
             $template['failure_path'] = $this->getFailurePath();

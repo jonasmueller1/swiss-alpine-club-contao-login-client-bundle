@@ -13,5 +13,5 @@ return static function (ECSConfig $ECSConfig): void {
 
     // Custom
     $ECSConfig->import(__DIR__.'/set/skip_configuration.php');
-
+	$ECSConfig->lineEnding("\n");
 };
